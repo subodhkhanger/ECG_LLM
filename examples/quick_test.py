@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 """Quick examples of using tiny datasets for architecture testing."""
 
-import sys
-sys.path.insert(0, '/Users/ronnie/Documents/ECG_LLM')
-
-from src.eeg_crit_transformer.data.test_datasets import TinyEEG, SyntheticEEG
-from src.eeg_crit_transformer.models.crit_transformer import build_model
+from eeg_crit_transformer.data.test_datasets import TinyEEG, SyntheticEEG
+from eeg_crit_transformer.models.crit_transformer import build_model
 import torch
 
 # Example 1: Ultra-fast with TinyEEG (8 samples, minimal overhead)
