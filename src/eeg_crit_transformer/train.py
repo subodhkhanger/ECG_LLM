@@ -144,7 +144,7 @@ def train_one_epoch(model, loader, opt, device) -> Dict[str, Any]:
 
         all_preds.extend(pred.cpu().numpy())
         all_labels.extend(y.cpu().numpy())
-        all_probs.extend(probs.cpu().numpy())
+        all_probs.extend(probs.detach().cpu().numpy())
 
     # Compute aggregate metrics
     all_preds = np.array(all_preds)
@@ -208,7 +208,7 @@ def evaluate(model, loader, device) -> Dict[str, Any]:
 
         all_preds.extend(pred.cpu().numpy())
         all_labels.extend(y.cpu().numpy())
-        all_probs.extend(probs.cpu().numpy())
+        all_probs.extend(probs.detach().cpu().numpy())
 
     # Compute aggregate metrics
     all_preds = np.array(all_preds)
