@@ -14,7 +14,6 @@ from tqdm import tqdm
 
 from eeg_crit_transformer.models.crit_transformer import build_model
 from eeg_crit_transformer.data.chbmit import CHBMITWindows, WindowingConfig
-from eeg_crit_transformer.data.test_datasets import SyntheticEEG, TinyEEG
 
 
 def parse_args() -> argparse.Namespace:
@@ -80,24 +79,88 @@ def compute_weight_stats(model: torch.nn.Module) -> Dict[str, float]:
 
 
 def make_dataloaders(args: argparse.Namespace):
-    if args.data_dir and args.annotations and os.path.exists(args.annotations):
-        cfg = WindowingConfig(sample_rate=args.sample_rate, window_sec=args.window_sec)
-        ds = CHBMITWindows(
-            root=args.data_dir,
-            annotations_csv=args.annotations,
-            config=cfg,
-            max_files=args.max_files,
-        )
-        in_channels = ds[0][0].shape[0] if len(ds) > 0 else args.channels
-    else:
-        # Fallback synthetic dataset for minimal reproducibility
-        length = args.sample_rate * args.window_sec
-        ds = SyntheticEEG(n=256, channels=args.channels, length=int(length))
-        in_channels = args.channels
+    """Load real CHB-MIT data - no synthetic fallback."""
+
+    # Check if data directory and annotations are provided
+    if not args.data_dir:
+        print("\n" + "=" * 70)
+        print("ERROR: --data-dir is required!")
+        print("=" * 70)
+        print("\nUsage:")
+        print("  python -m eeg_crit_transformer.train \\")
+        print("    --data-dir data/chbmit \\")
+        print("    --annotations data/chbmit/annotations.csv \\")
+        print("    --epochs 10")
+        print("\nSteps to prepare data:")
+        print("  1. Download CHB-MIT data:")
+        print("     export PHYSIONET_USER='your_username'")
+        print("     export PHYSIONET_PASS='your_password'")
+        print("     bash scripts/download_chbmit.sh data/chbmit chb01 chb02")
+        print("\n  2. Create annotations CSV:")
+        print("     python scripts/create_annotations.py --data-dir data/chbmit")
+        print("\n  3. Train:")
+        print("     python -m eeg_crit_transformer.train \\")
+        print("       --data-dir data/chbmit \\")
+        print("       --annotations data/chbmit/annotations.csv \\")
+        print("       --epochs 10")
+        print("=" * 70 + "\n")
+        exit(1)
+
+    if not args.annotations:
+        print("\n" + "=" * 70)
+        print("ERROR: --annotations is required!")
+        print("=" * 70)
+        print("\nCreate annotations CSV with:")
+        print("  python scripts/create_annotations.py --data-dir data/chbmit")
+        print("=" * 70 + "\n")
+        exit(1)
+
+    # Check if annotations file exists
+    if not os.path.exists(args.annotations):
+        print("\n" + "=" * 70)
+        print(f"ERROR: Annotations file not found: {args.annotations}")
+        print("=" * 70)
+        print("\nCreate it with:")
+        print(f"  python scripts/create_annotations.py --data-dir {args.data_dir}")
+        print("=" * 70 + "\n")
+        exit(1)
+
+    # Load real CHB-MIT data
+    print(f"\n📊 Loading CHB-MIT data from: {args.data_dir}")
+    print(f"📋 Using annotations: {args.annotations}")
+
+    cfg = WindowingConfig(sample_rate=args.sample_rate, window_sec=args.window_sec)
+    ds = CHBMITWindows(
+        root=args.data_dir,
+        annotations_csv=args.annotations,
+        config=cfg,
+        max_files=args.max_files,
+    )
+
+    if len(ds) == 0:
+        print("\n" + "=" * 70)
+        print("ERROR: No windows loaded from data!")
+        print("=" * 70)
+        print("\nPossible reasons:")
+        print("  1. EDF files not found in data directory")
+        print("  2. Annotations CSV is empty or incorrectly formatted")
+        print("  3. Summary files (.txt) missing")
+        print("\nCheck:")
+        print(f"  ls {args.data_dir}/chb01/")
+        print(f"  head {args.annotations}")
+        print("=" * 70 + "\n")
+        exit(1)
+
+    in_channels = ds[0][0].shape[0]
+
+    print(f"✅ Loaded {len(ds)} windows from {len(ds)} samples")
+    print(f"📈 Input channels: {in_channels}")
 
     n_val = max(1, int(len(ds) * args.val_split))
     n_train = len(ds) - n_val
     train_ds, val_ds = random_split(ds, [n_train, n_val])
+
+    print(f"🔄 Train samples: {len(train_ds)}, Validation samples: {len(val_ds)}\n")
 
     train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.workers)
     val_loader = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
