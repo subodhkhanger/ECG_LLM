@@ -126,8 +126,8 @@ def make_dataloaders(args: argparse.Namespace):
         exit(1)
 
     # Load real CHB-MIT data
-    print(f"\n📊 Loading CHB-MIT data from: {args.data_dir}")
-    print(f"📋 Using annotations: {args.annotations}")
+    print(f"\nLoading CHB-MIT data from: {args.data_dir}")
+    print(f"Using annotations: {args.annotations}")
 
     cfg = WindowingConfig(sample_rate=args.sample_rate, window_sec=args.window_sec)
     ds = CHBMITWindows(
@@ -153,16 +153,23 @@ def make_dataloaders(args: argparse.Namespace):
 
     in_channels = ds[0][0].shape[0]
 
-    print(f"✅ Loaded {len(ds)} windows from {len(ds)} samples")
+    print(f"✅ Loaded {len(ds)} training windows")
     print(f"📈 Input channels: {in_channels}")
 
-    n_val = max(1, int(len(ds) * args.val_split))
-    n_train = len(ds) - n_val
-    train_ds, val_ds = random_split(ds, [n_train, n_val])
+    # Load validation dataset (different seizure events to prevent data leakage)
+    val_ds = CHBMITWindows(
+        root=args.data_dir,
+        annotations_csv=args.annotations,
+        config=cfg,
+        max_files=args.max_files,
+        split='val',
+        val_split=args.val_split,
+    )
 
-    print(f"🔄 Train samples: {len(train_ds)}, Validation samples: {len(val_ds)}\n")
+    print(f"✅ Loaded {len(val_ds)} validation windows")
+    print(f"🔄 Train samples: {len(ds)}, Validation samples: {len(val_ds)}\n")
 
-    train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.workers)
+    train_loader = DataLoader(ds, batch_size=args.batch_size, shuffle=True, num_workers=args.workers)
     val_loader = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
     return train_loader, val_loader, in_channels
 
@@ -474,7 +481,7 @@ def main():
                 "val_metrics": val_metrics,
                 "best_val_acc": best_val_acc,
             }, "checkpoints/best.pt")
-            print(f"\n{'':>40}⭐ New best model saved! (val_acc: {best_val_acc:.4f})")
+            print(f"\n{'':>40}New best model saved! (val_acc: {best_val_acc:.4f})")
 
         # Quick summary
         print(f"\n{'Summary':^80}")
@@ -497,7 +504,7 @@ def main():
         history_path = "checkpoints/training_history.json"
         with open(history_path, "w") as f:
             json.dump(history, f, indent=2)
-        print(f"\n📊 Training history saved to: {history_path}")
+        print(f"\nTraining history saved to: {history_path}")
 
 
 if __name__ == "__main__":

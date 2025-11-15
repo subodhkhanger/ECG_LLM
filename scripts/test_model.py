@@ -154,13 +154,13 @@ def print_metrics(metrics):
     print(f"\nConfusion Matrix:")
     print(f"  True Positives (TP):  {metrics['TP']:4d}  (correctly detected seizures)")
     print(f"  False Positives (FP): {metrics['FP']:4d}  (false alarms)")
-    print(f"  False Negatives (FN): {metrics['FN']:4d}  (missed seizures) ⚠️")
+    print(f"  False Negatives (FN): {metrics['FN']:4d}  (missed seizures)")
     print(f"  True Negatives (TN):  {metrics['TN']:4d}  (correct non-seizure)")
 
     print("\n" + "=" * 70)
 
     # Medical relevance
-    print("\n📋 Medical Interpretation:")
+    print("\nMedical Interpretation:")
     if metrics.get('Seizure_recall', 0) > 0.90:
         print("   EXCELLENT: Model catches >90% of seizures (safe for clinical use)")
     elif metrics.get('Seizure_recall', 0) > 0.80:

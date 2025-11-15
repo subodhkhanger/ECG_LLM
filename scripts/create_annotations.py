@@ -155,10 +155,10 @@ def create_annotations_csv(data_dir: str, output_csv: str, patients: List[str] =
             for ann in all_annotations:
                 f.write(f"{ann['file']},{ann['start']},{ann['end']},{ann['label']}\n")
 
-        print(f"\n✓ Created annotations CSV: {output_csv}")
+        print(f"\nCreated annotations CSV: {output_csv}")
         print(f"  Total seizure events: {len(all_annotations)}")
     else:
-        print("\n✗ No annotations found!")
+        print("\nNo annotations found!")
 
 
 def main():

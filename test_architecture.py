@@ -48,7 +48,7 @@ def test_forward_pass():
     n_params = sum(p.numel() for p in model.parameters())
     print(f"\nTotal parameters: {n_params:,}")
 
-    print("\n✓ Architecture test passed!")
+    print("\nArchitecture test passed!")
 
 
 def test_with_dataloader():
@@ -93,7 +93,7 @@ def test_with_dataloader():
         print(f"Predictions: {preds}")
         break  # Only test first batch
 
-    print("\n✓ DataLoader test passed!")
+    print("\nDataLoader test passed!")
 
 
 def test_training_step():
@@ -131,7 +131,7 @@ def test_training_step():
     print(f"Loss: {loss_after.item():.4f}")
     print(f"Loss changed: {abs(loss_after.item() - loss_before.item()):.6f}")
 
-    print("\n✓ Training step test passed!")
+    print("\nTraining step test passed!")
 
 
 if __name__ == "__main__":
@@ -149,5 +149,5 @@ if __name__ == "__main__":
     test_training_step()
 
     print("\n" + "=" * 60)
-    print("All tests passed! ✓")
+    print("All tests passed!")
     print("=" * 60)
