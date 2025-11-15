@@ -28,10 +28,10 @@ fi
 for s in "${SUBJECTS[@]}"; do
   mkdir -p "$s"
   echo "Downloading $s ..."
-  # Fetch directory listing and selectively download EDF files
+  # Fetch directory listing and selectively download EDF files and summary txt files
   # Note: Access may prompt for authentication; we use curl with basic auth.
   curl -fL --user "$PHYSIONET_USER:$PHYSIONET_PASS" "$BASE/$s/" | \
-    grep -Eo 'href=\"[^\"]+\.edf\"' | sed -E 's/href=\"(.*)\"/\1/' | while read -r f; do
+    grep -Eo 'href=\"[^\"]+\.(edf|txt)\"' | sed -E 's/href=\"(.*)\"/\1/' | while read -r f; do
       if [[ ! -f "$s/$f" ]]; then
         echo "  -> $f"
         curl -fL --user "$PHYSIONET_USER:$PHYSIONET_PASS" -o "$s/$f" "$BASE/$s/$f"
