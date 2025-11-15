@@ -5,9 +5,8 @@ Overview
 - It includes: a lightweight Transformer for multichannel EEG, a CHB-MIT dataset loader (EDF + CSV annotations), a training script with comprehensive monitoring, and a download helper that you can use with your PhysioNet credentials.
 
 What you can run right now
-- With no data present, the training script falls back to a synthetic dataset so you can validate the environment and pipeline quickly.
 - Comprehensive training monitoring including gradient norms, per-class metrics, confidence statistics, and confusion matrices.
-- Multiple test datasets: TinyEEG (8 samples, ultra-fast) and SyntheticEEG (256 samples, realistic).
+
 
 Quick start
 
@@ -52,8 +51,6 @@ python -m eeg_crit_transformer.train \
 python scripts/visualize_training.py
 ```
 
-📖 **See [docs/QUICKSTART.md](docs/QUICKSTART.md) for detailed instructions**
-
 Training monitoring
 - The training script automatically tracks 20+ metrics per epoch:
   - Gradient norms (mean, std, max) for detecting vanishing/exploding gradients
@@ -63,7 +60,7 @@ Training monitoring
   - Weight statistics and changes
   - Batch loss variance (training stability)
 - Use `--save-history` to save metrics to JSON for later analysis
-- See [docs/TRAINING_MONITORING.md](docs/TRAINING_MONITORING.md) for detailed documentation
+
 
 Project layout
 - `requirements.txt` – dependencies
